@@ -10,12 +10,15 @@ const clientSecret = "72342689cd1a40c186f08f5a307967c1";
 
 let token = null;
 let genresList = null;
-let songList = null;
+let songList = [];
 // Client_id=0a9829432e2c4df1acae5df180f278ae
 // Client_secret=72342689cd1a40c186f08f5a307967c1
 
 // private methods
 async function _getToken(req, res, next) {
+  console.log(
+    "get token works-----------------------------------------------------------------"
+  );
   let result = await axios({
     method: "post",
     url: "https://accounts.spotify.com/api/token",
@@ -26,17 +29,22 @@ async function _getToken(req, res, next) {
     data: "grant_type=client_credentials",
   })
     .catch((err) => {
+      console.log("get token error");
       console.log(err);
     })
     .then((res) => {
       token = res.data.access_token;
     });
-  _getGenres();
+
   _getTracks();
+  console.log(
+    "get token ends -----------------------------------------------------------------"
+  );
   res.render("index.ejs", { genresList, songList });
 }
 
 async function _getGenres(req, res, next) {
+  console.log("get genres Start");
   const genresResult = await axios({
     method: "get",
     url: "https://api.spotify.com/v1/browse/categories?locale=sv_US",
@@ -44,9 +52,6 @@ async function _getGenres(req, res, next) {
       Authorization: `Bearer ${token}`,
     },
   })
-    .catch((err) => {
-      console.log(err);
-    })
     .then((res) => {
       // console.log("response");
       // console.log(res.data);
@@ -58,10 +63,16 @@ async function _getGenres(req, res, next) {
 
       genresList = genres;
       // console.log(genresList);
+    })
+    .catch((err) => {
+      console.log("get genres error");
+      console.log(err);
     });
+  console.log("get genres End");
 }
 
 async function _getTracks(req, res, next) {
+  console.log("get tracks");
   const tracksEndPoint =
     "https://api.spotify.com/v1/playlists/37i9dQZF1DXcBWIGoYBM5M";
   const limit = 10;
@@ -72,9 +83,6 @@ async function _getTracks(req, res, next) {
       Authorization: `Bearer ${token}`,
     },
   })
-    .catch((err) => {
-      console.log(err);
-    })
     .then((res) => {
       songList = res.data.items;
       // console.log(songList[0].track.album.images[2].url);
@@ -84,10 +92,16 @@ async function _getTracks(req, res, next) {
       //   console.log(item.track.name);
       //   console.log(item.track.artists[0].name);
       // });
+    })
+    .catch((err) => {
+      console.log("get tracks error");
+      console.log(err);
     });
+  console.log("get tracks End");
 }
 
 async function addToPlaylist(req, res, next) {
+  console.log("get add to palylsit start ");
   // console.log(playlistDb);
   let addSongDetails = await playlistDb.create({
     trackName: req.body.trackName,
@@ -97,6 +111,7 @@ async function addToPlaylist(req, res, next) {
   // console.log(addSongDetails);
 
   res.redirect("/");
+  console.log("get add to palylsit end");
 }
 
 async function showMyPlaylist(req, res, next) {
